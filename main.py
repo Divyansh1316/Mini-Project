@@ -56,6 +56,9 @@ def clear():
 
     textArea.delete(0,END)
 
+if not os.path.exists("bills"):
+    os.mkdir("bills")
+
 def save_bill():
     global billnumber
     result=messagebox.askyesno("Confirm","Do you want to save the bill ?")
