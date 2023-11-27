@@ -1,0 +1,21 @@
+		**WELCOME CUSTOMER**
+
+Bill Number : 541
+
+Customer Name : Divyansh Dhaundiyal
+
+Customer Ph no. : 8899151127
+
+======================================================
+Product			Quantity			Price
+======================================================
+Bath Soap			1			20 Rs
+Face Wash			2			200 Rs
+Daal			1			70 Rs
+Frooti			2			20 Rs
+------------------------------------------------------
+Cosmetics Tax			26.4 Rs
+Groceries Tax			3.5 Rs
+Drinks Tax			1.6 Rs
+Total Bill 			 341.5 Rs
+------------------------------------------------------
