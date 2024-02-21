@@ -1,8 +1,23 @@
 from tkinter import*
 from tkinter import messagebox
-import random
+import random,os
+import pymysql
 
 #functionality
+
+def disp():
+    global res
+    try:
+        con=pymysql.connect(host='localhost',user='root',password="pwd")  
+        mycursor=con.cursor()
+    except:
+        messagebox.showerror('Error','Connection error. Try again')
+        return
+    query='use userdata'
+    mycursor.execute(query)
+    query='select username from data where id=1'
+    mycursor.execute(query)
+    res=mycursor.fetchall()
 
 def clear():
     bathsoapEntry.delete(0,END)
@@ -45,16 +60,18 @@ def clear():
     
     cosmeticstaxEntry.delete(0,END)
     grocerytaxEntry.delete(0,END)
+    drinkstaxEntry.delete(0,END)
 
     cosmeticspriceEntry.delete(0,END)
     grocerypriceEntry.delete(0,END)
     drinkspriceEntry.delete(0,END)
 
-    nameEntry.delete(0,END)
     phoneEntry.delete(0,END)
     addressEntry.delete(0,END)
 
-    textArea.delete(0,END)
+    membership_checkbox.deselect()
+
+    textArea.delete(1.0,END) 
 
 if not os.path.exists("bills"):
     os.mkdir("bills")
@@ -63,27 +80,27 @@ def save_bill():
     global billnumber
     result=messagebox.askyesno("Confirm","Do you want to save the bill ?")
     if result:
-        bill_content=textArea.get(1.0,END) #stores everything on the bill area to the variable from start to end
+        bill_content=textArea.get(1.0,END) 
         file=open(f"bills/{billnumber}.txt","w")
         file.write(bill_content)
         file.close()
-        messagebox.showinfo("Suceess",f"Bill number {billnumber}is saved succesfull")
+        messagebox.showinfo("Suceess",f"Bill number {billnumber} is saved succesfull")
         billnumber=random.randint(500,1000)
 
 billnumber=random.randint(500,1000)
 
 def bill_area():
-    if(nameEntry.get()=="" or phoneEntry.get()=="" or addressEntry.get()==""):
-        messagebox.showerror("Error","Customer details are required") #this prints this message when no name is provided
+    if(phoneEntry.get()=="" or addressEntry.get()==""):
+        messagebox.showerror("Error","Customer details are required") 
     elif cosmeticspriceEntry.get()=="" and grocerypriceEntry.get()=="" and drinkspriceEntry.get()=="":
         messagebox.showerror("Error","No products are selected") 
     elif cosmeticspriceEntry.get()=="0 Rs" and grocerypriceEntry.get()=="0 Rs" and drinkspriceEntry.get()=="0 Rs":
         messagebox.showerror("Error","No products are selected") 
     else:
         textArea.delete(1.0,END)
-        textArea.insert(END,"\t\t**WELCOME CUSTOMER**\n") #since nothing is inserted so END positin will be the starting position only
+        textArea.insert(END,"\t\t**WELCOME CUSTOMER**\n") 
         textArea.insert(END,f"\nBill Number : {billnumber}\n")
-        textArea.insert(END,f"\nCustomer Name : {nameEntry.get()}\n")
+        textArea.insert(END,f"\nCustomer Name : {res[0][0]}\n")
         textArea.insert(END,f"\nCustomer Ph no. : {phoneEntry.get()}\n")
         textArea.insert(END,f"\nCustomer Address : {addressEntry.get()}\n")
         textArea.insert(END,"\n======================================================")
@@ -91,7 +108,7 @@ def bill_area():
         textArea.insert(END,"\n======================================================")
      
         if(bathsoapEntry.get()!="0"):
-            textArea.insert(END,f"\nBath Soap\t\t\t{bathsoapEntry.get()}\t\t\t{soapprice} Rs") #we had to make soapprice global as its in another function.
+            textArea.insert(END,f"\nBath Soap\t\t\t{bathsoapEntry.get()}\t\t\t{soapprice} Rs") 
         if(facecreamEntry.get()!="0"):
             textArea.insert(END,f"\nFace Cream\t\t\t{facecreamEntry.get()}\t\t\t{facecreamprice} Rs")
         if(facewashEntry.get()!="0"):
@@ -150,7 +167,7 @@ def total():
     global pepsiprice,colaprice,frootiprice,maazaprice,gatoradeprice,limcaprice
     global totalbill,membership_discount,flat_discount
     
-    soapprice=int(bathsoapEntry.get())*20 #get is used to take input from user and store it in soapvalue variable. also it will return a string, so we have to convert it into a string. here 20 is price of 1 soap
+    soapprice=int(bathsoapEntry.get())*20 
     facecreamprice=int(facecreamEntry.get())*50
     facewashprice=int(facewashEntry.get())*100
     hairsprayprice=int(hairsprayEntry.get())*150
@@ -158,8 +175,8 @@ def total():
     bodylotionprice=int(bodylotionEntry.get())*60
     
     totalcosmeticprice=soapprice+facecreamprice+facewashprice+hairsprayprice+hairgelprice+bodylotionprice
-    cosmeticspriceEntry.delete(0,END) #this will delete the repeated text when we hit total button multiple times, i.e 0
-    cosmeticspriceEntry.insert(0,f"{totalcosmeticprice} Rs") #insert is used to display the data on the field
+    cosmeticspriceEntry.delete(0,END) 
+    cosmeticspriceEntry.insert(0,f"{totalcosmeticprice} Rs") 
     
     cosmeticstax=totalcosmeticprice*0.12
     cosmeticstaxEntry.delete(0,END)
@@ -216,31 +233,34 @@ def total():
         totalbill-=membership_discount
 
 #GUI
-root=Tk()   #root is an object of Tk() class
-root.geometry("1290x685")
-headlingLabel=Label(root,text="GEU Shopping Mart",font=("Outfit",30,"bold"),bg="yellow") #headlingLable is an object of the Label class, and since we want it to display in the window so we have passed root as an argument we cant see this as we haven't positioned it yet so we have to use pack method.
-headlingLabel.pack(side="top",fill=X,pady=10) #this brings the text to the top and fills it in the X axis
+root=Tk() 
+root.geometry("1290x685+100+50")
+root.title('Main window')
+root.configure(bg='#042741')
+disp()
+headlingLabel=Label(root,text="GEU Shopping Mart",font=("Outfit",30,"bold"),bg='#042741',fg='white') 
+headlingLabel.pack(side="top",fill=X,pady=10) 
 
-customer_details_frame=LabelFrame(root,text="Customer Details",font=("Outfit",15,"bold")) #we cant see this as we haven't positioned it yet so we have to use pack method.
-customer_details_frame.pack(fill=X,padx=10) #this will help it position the labelframe, but the content is only displayed when there is something present in the labelframe.
+customer_details_frame=LabelFrame(root,text="Customer Details",font=("Outfit",15,"bold"),bg='#042741',fg='white') 
+customer_details_frame.pack(fill=X,padx=10) 
 
-nameLabel=Label(customer_details_frame,text="Name",font=("Outfit",15,"bold")) #this creates a name field/label
-nameLabel.grid(row=0,column=0,padx=40)    #this adds in the form of rows and columns and adds padding on left and right side of Name
-nameEntry=Entry(customer_details_frame,font=("Outfit",10)) #adds an entry field or a box for adding name
-nameEntry.grid(row=0,column=1,padx=8) #used for positioning
+nameLabel=Label(customer_details_frame,text="Name :",font=("Outfit",15,"bold"),bg='#042741',fg='white') 
+nameLabel.grid(row=0,column=0,padx=40) 
+nameEntry=Label(customer_details_frame,text=res,font=("Outfit",15,'bold'),bg='#042741',fg='white') 
+nameEntry.grid(row=0,column=1,padx=8) 
 
-phoneLabel=Label(customer_details_frame,text="Phone Number",font=("Outfit",15,"bold"))
+phoneLabel=Label(customer_details_frame,text="Phone Number",font=("Outfit",15,"bold"),bg='#042741',fg='white')
 phoneLabel.grid(row=0,column=2,padx=40,pady=2)
-phoneEntry=Entry(customer_details_frame,font=("Outfit",10))
+phoneEntry=Entry(customer_details_frame,font=("Outfit",10),bg='white',fg='black')
 phoneEntry.grid(row=0,column=3,padx=8)
 
-addressLabel=Label(customer_details_frame,text="Address",font=("Outfit",15,"bold"))
+addressLabel=Label(customer_details_frame,text="Address",font=("Outfit",15,"bold"),bg='#042741',fg='white')
 addressLabel.grid(row=0,column=4,padx=40,pady=2)
-addressEntry=Entry(customer_details_frame,font=("Outfit",10)) 
+addressEntry=Entry(customer_details_frame,font=("Outfit",10),bg='white',fg='black') 
 addressEntry.grid(row=0,column=5,padx=8) 
 
 membership_var=IntVar()
-membership_checkbox=Checkbutton(customer_details_frame,text="Member",variable=membership_var,font=("Outfit",15,"bold"))
+membership_checkbox=Checkbutton(customer_details_frame,text="Member",variable=membership_var,font=("Outfit",15,"bold"),bg='#042741',activebackground='#042741',fg='white',selectcolor='#042741')  
 membership_checkbox.grid(row=0,column=6,padx=8)
 '''
 searchButtom=Button(customer_details_frame,text="Search",font=("Outfit",15,"bold"))
@@ -248,10 +268,10 @@ searchButtom.grid(row=0,column=6,padx=10,pady=8)
 '''
 
 productsFrame=Frame(root)
-productsFrame.pack(pady=10) #pack also moves content next to prev content
+productsFrame.pack(pady=10) 
 
-cosmeticsFrame=LabelFrame(productsFrame,text="Cosmetic",font=("Outfit",15,"bold"))
-cosmeticsFrame.grid(row=0,column=0) #here we are using grid method as cosmetic is one of the elements of the grid
+cosmeticsFrame=LabelFrame(productsFrame,text="Cosmetic",font=("Outfit",15,"bold"),bg='#042741',fg='white')
+cosmeticsFrame.grid(row=0,column=0) 
 
 '''
 for drop-down box
@@ -262,143 +282,143 @@ bathsoapEntry=ttk.Combobox(cosmeticsFrame,text="Face Cream",font=("Outfit",15,"b
 bathsoapEntry.grid(row=0,column=1)
 '''
 
-bathsoapLabel=Label(cosmeticsFrame,text="Bath Soap",font=("Outfit",15,"bold"))
+bathsoapLabel=Label(cosmeticsFrame,text="Bath Soap",font=("Outfit",15,"bold"),bg='#042741',fg='white')
 bathsoapLabel.grid(row=0,column=0,pady=8,padx=10,sticky="w") #sticky is used to align it to the left
 
-bathsoapEntry=Entry(cosmeticsFrame,font=("Outfit",15,"bold"),width=10)
+bathsoapEntry=Entry(cosmeticsFrame,font=("Outfit",15,"bold"),width=10,bg='white',fg='black')
 bathsoapEntry.grid(row=0,column=1,pady=8,padx=10)
 bathsoapEntry.insert(0,0)
 
-facecreamLabel=Label(cosmeticsFrame,text="Face Cream",font=("Outfit",15,"bold"))
+facecreamLabel=Label(cosmeticsFrame,text="Face Cream",font=("Outfit",15,"bold"),bg='#042741',fg='white')
 facecreamLabel.grid(row=1,column=0,pady=8,padx=10,sticky="w")
 
-facecreamEntry=Entry(cosmeticsFrame,font=("Outfit",15,"bold"),width=10)
+facecreamEntry=Entry(cosmeticsFrame,font=("Outfit",15,"bold"),width=10,bg='white',fg='black')
 facecreamEntry.grid(row=1,column=1,pady=8,padx=10)
 facecreamEntry.insert(0,0)
 
 
-facewashLabel=Label(cosmeticsFrame,text="Face Wash",font=("Outfit",15,"bold"))
+facewashLabel=Label(cosmeticsFrame,text="Face Wash",font=("Outfit",15,"bold"),bg='#042741',fg='white')
 facewashLabel.grid(row=2,column=0,pady=8,padx=10,sticky="w")
 
-facewashEntry=Entry(cosmeticsFrame,font=("Outfit",15,"bold"),width=10)
+facewashEntry=Entry(cosmeticsFrame,font=("Outfit",15,"bold"),width=10,bg='white',fg='black')
 facewashEntry.grid(row=2,column=1,pady=8,padx=10)
 facewashEntry.insert(0,0)
 
-hairsprayLabel=Label(cosmeticsFrame,text="Hair Spray",font=("Outfit",15,"bold"))
+hairsprayLabel=Label(cosmeticsFrame,text="Hair Spray",font=("Outfit",15,"bold"),bg='#042741',fg='white')
 hairsprayLabel.grid(row=3,column=0,pady=8,padx=10,sticky="w")
 
-hairsprayEntry=Entry(cosmeticsFrame,font=("Outfit",15,"bold"),width=10)
+hairsprayEntry=Entry(cosmeticsFrame,font=("Outfit",15,"bold"),width=10,bg='white',fg='black')
 hairsprayEntry.grid(row=3,column=1,pady=8,padx=10)
 hairsprayEntry.insert(0,0)
 
-hairgelLabel=Label(cosmeticsFrame,text="Hair Gel",font=("Outfit",15,"bold"))
+hairgelLabel=Label(cosmeticsFrame,text="Hair Gel",font=("Outfit",15,"bold"),bg='#042741',fg='white')
 hairgelLabel.grid(row=4,column=0,pady=8,padx=10,sticky="w")
 
-hairgelEntry=Entry(cosmeticsFrame,font=("Outfit",15,"bold"),width=10)
+hairgelEntry=Entry(cosmeticsFrame,font=("Outfit",15,"bold"),width=10,bg='white',fg='black')
 hairgelEntry.grid(row=4,column=1,pady=8,padx=10)
 hairgelEntry.insert(0,0)
 
-bodylotionLabel=Label(cosmeticsFrame,text="Body Lotion",font=("Outfit",15,"bold"))
+bodylotionLabel=Label(cosmeticsFrame,text="Body Lotion",font=("Outfit",15,"bold"),bg='#042741',fg='white')
 bodylotionLabel.grid(row=5,column=0,pady=8,padx=10,sticky="w")
 
-bodylotionEntry=Entry(cosmeticsFrame,font=("Outfit",15,"bold"),width=10)
+bodylotionEntry=Entry(cosmeticsFrame,font=("Outfit",15,"bold"),width=10,bg='white',fg='black')
 bodylotionEntry.grid(row=5,column=1,pady=8,padx=10)
 bodylotionEntry.insert(0,0)
 
-groceryFrame=LabelFrame(productsFrame,text="Grocery",font=("Outfit",15,"bold"))
+groceryFrame=LabelFrame(productsFrame,text="Grocery",font=("Outfit",15,"bold"),bg='#042741',fg='white')
 groceryFrame.grid(row=0,column=1)
 
-riceLabel=Label(groceryFrame,text="Rice",font=("Outfit",15,"bold"))
+riceLabel=Label(groceryFrame,text="Rice",font=("Outfit",15,"bold"),bg='#042741',fg='white')
 riceLabel.grid(row=0,column=0,pady=8,padx=10,sticky="w")
 
-riceEntry=Entry(groceryFrame,font=("Outfit",15,"bold"),width=10)
+riceEntry=Entry(groceryFrame,font=("Outfit",15,"bold"),width=10,bg='white',fg='black')
 riceEntry.grid(row=0,column=1,pady=8,padx=10)
 riceEntry.insert(0,0)
 
-oilLabel=Label(groceryFrame,text="Oil",font=("Outfit",15,"bold"))
+oilLabel=Label(groceryFrame,text="Oil",font=("Outfit",15,"bold"),bg='#042741',fg='white')
 oilLabel.grid(row=1,column=0,pady=8,padx=10,sticky="w")
 
-oilEntry=Entry(groceryFrame,font=("Outfit",15,"bold"),width=10)
+oilEntry=Entry(groceryFrame,font=("Outfit",15,"bold"),width=10,bg='white',fg='black')
 oilEntry.grid(row=1,column=1,pady=8,padx=10)
 oilEntry.insert(0,0)
 
-daalLabel=Label(groceryFrame,text="Daal",font=("Outfit",15,"bold"))
+daalLabel=Label(groceryFrame,text="Daal",font=("Outfit",15,"bold"),bg='#042741',fg='white')
 daalLabel.grid(row=2,column=0,pady=8,padx=10,sticky="w")
 
-daalEntry=Entry(groceryFrame,font=("Outfit",15,"bold"),width=10)
+daalEntry=Entry(groceryFrame,font=("Outfit",15,"bold"),width=10,bg='white',fg='black')
 daalEntry.grid(row=2,column=1,pady=8,padx=10)
 daalEntry.insert(0,0)
 
-wheatLabel=Label(groceryFrame,text="Wheat",font=("Outfit",15,"bold"))
+wheatLabel=Label(groceryFrame,text="Wheat",font=("Outfit",15,"bold"),bg='#042741',fg='white')
 wheatLabel.grid(row=3,column=0,pady=8,padx=10,sticky="w")
 
-wheatEntry=Entry(groceryFrame,font=("Outfit",15,"bold"),width=10)
+wheatEntry=Entry(groceryFrame,font=("Outfit",15,"bold"),width=10,bg='white',fg='black')
 wheatEntry.grid(row=3,column=1,pady=8,padx=10)
 wheatEntry.insert(0,0)
 
-sugarLabel=Label(groceryFrame,text="Sugar",font=("Outfit",15,"bold"))
+sugarLabel=Label(groceryFrame,text="Sugar",font=("Outfit",15,"bold"),bg='#042741',fg='white')
 sugarLabel.grid(row=4,column=0,pady=8,padx=10,sticky="w")
 
-sugarEntry=Entry(groceryFrame,font=("Outfit",15,"bold"),width=10)
+sugarEntry=Entry(groceryFrame,font=("Outfit",15,"bold"),width=10,bg='white',fg='black')
 sugarEntry.grid(row=4,column=1,pady=8,padx=10)
 sugarEntry.insert(0,0)
 
-teaLabel=Label(groceryFrame,text="Tea",font=("Outfit",15,"bold"))
+teaLabel=Label(groceryFrame,text="Tea",font=("Outfit",15,"bold"),bg='#042741',fg='white')
 teaLabel.grid(row=5,column=0,pady=8,padx=10,sticky="w")
 
-teaEntry=Entry(groceryFrame,font=("Outfit",15,"bold"),width=10)
+teaEntry=Entry(groceryFrame,font=("Outfit",15,"bold"),width=10,bg='white',fg='black')
 teaEntry.grid(row=5,column=1,pady=8,padx=10)
 teaEntry.insert(0,0)
 
-drinksFrame=LabelFrame(productsFrame,text="Drinks",font=("Outfit",15,"bold"))
+drinksFrame=LabelFrame(productsFrame,text="Drinks",font=("Outfit",15,"bold"),bg='#042741',fg='white')
 drinksFrame.grid(row=0,column=2)
 
-pepsiLabel=Label(drinksFrame,text="Pepsi",font=("Outfit",15,"bold"))
+pepsiLabel=Label(drinksFrame,text="Pepsi",font=("Outfit",15,"bold"),bg='#042741',fg='white')
 pepsiLabel.grid(row=0,column=0,pady=8,padx=10,sticky="w")
 
-pepsiEntry=Entry(drinksFrame,font=("Outfit",15,"bold"),width=10)
+pepsiEntry=Entry(drinksFrame,font=("Outfit",15,"bold"),width=10,bg='white',fg='black')
 pepsiEntry.grid(row=0,column=1,pady=8,padx=10)
 pepsiEntry.insert(0,0)
 
-colaLabel=Label(drinksFrame,text="Coca Cola",font=("Outfit",15,"bold"))
+colaLabel=Label(drinksFrame,text="Coca Cola",font=("Outfit",15,"bold"),bg='#042741',fg='white')
 colaLabel.grid(row=1,column=0,pady=8,padx=10,sticky="w")
 
-colaEntry=Entry(drinksFrame,font=("Outfit",15,"bold"),width=10)
+colaEntry=Entry(drinksFrame,font=("Outfit",15,"bold"),width=10,bg='white',fg='black')
 colaEntry.grid(row=1,column=1,pady=8,padx=10)
 colaEntry.insert(0,0)
 
-frootiLabel=Label(drinksFrame,text="Frooti",font=("Outfit",15,"bold"))
+frootiLabel=Label(drinksFrame,text="Frooti",font=("Outfit",15,"bold"),bg='#042741',fg='white')
 frootiLabel.grid(row=2,column=0,pady=8,padx=10,sticky="w")
 
-frootiEntry=Entry(drinksFrame,font=("Outfit",15,"bold"),width=10)
+frootiEntry=Entry(drinksFrame,font=("Outfit",15,"bold"),width=10,bg='white',fg='black')
 frootiEntry.grid(row=2,column=1,pady=8,padx=10)
 frootiEntry.insert(0,0)
 
-maazaLabel=Label(drinksFrame,text="Maaza",font=("Outfit",15,"bold"))
+maazaLabel=Label(drinksFrame,text="Maaza",font=("Outfit",15,"bold"),bg='#042741',fg='white')
 maazaLabel.grid(row=3,column=0,pady=8,padx=10,sticky="w")
 
-maazaEntry=Entry(drinksFrame,font=("Outfit",15,"bold"),width=10)
+maazaEntry=Entry(drinksFrame,font=("Outfit",15,"bold"),width=10,bg='white',fg='black')
 maazaEntry.grid(row=3,column=1,pady=8,padx=10)
 maazaEntry.insert(0,0)
 
-gatoradeLabel=Label(drinksFrame,text="Gatorade",font=("Outfit",15,"bold"))
+gatoradeLabel=Label(drinksFrame,text="Gatorade",font=("Outfit",15,"bold"),bg='#042741',fg='white')
 gatoradeLabel.grid(row=4,column=0,pady=8,padx=10,sticky="w")
 
-gatoradeEntry=Entry(drinksFrame,font=("Outfit",15,"bold"),width=10)
+gatoradeEntry=Entry(drinksFrame,font=("Outfit",15,"bold"),width=10,bg='white',fg='black')
 gatoradeEntry.grid(row=4,column=1,pady=8,padx=10)
 gatoradeEntry.insert(0,0)
 
-limcaLabel=Label(drinksFrame,text="Limca",font=("Outfit",15,"bold"))
+limcaLabel=Label(drinksFrame,text="Limca",font=("Outfit",15,"bold"),bg='#042741',fg='white')
 limcaLabel.grid(row=5,column=0,pady=8,padx=10,sticky="w")
 
-limcaEntry=Entry(drinksFrame,font=("Outfit",15,"bold"),width=10)
+limcaEntry=Entry(drinksFrame,font=("Outfit",15,"bold"),width=10,bg='white',fg='black')
 limcaEntry.grid(row=5,column=1,pady=8,padx=10)
 limcaEntry.insert(0,0)
 
-billFrame=Frame(productsFrame)
-billFrame.grid(row=0,column=3,padx=10)
+billFrame=Frame(productsFrame,bg='#042741',padx=10,pady=2)
+billFrame.grid(row=0,column=3)
 
-billareaLabel=Label(billFrame,text="Bill Area",font=("Outfit",15,"bold"))
+billareaLabel=Label(billFrame,text="Bill Area",font=("Outfit",15,"bold"),bg='#042741',fg='white')
 billareaLabel.pack()
 
 scrollbar=Scrollbar(billFrame,orient="vertical")
@@ -408,55 +428,55 @@ textArea=Text(billFrame,height=17,width=55,yscrollcommand=scrollbar.set) #this w
 textArea.pack()
 scrollbar.config(command=textArea.yview) #confirguring the scroll bar to see the vertical view
 
-billmenuFrame=LabelFrame(root,text="Bill Menu",font=("Outfit",15,"bold"))
+billmenuFrame=LabelFrame(root,text="Bill Menu",font=("Outfit",15,"bold"),bg='#042741',fg='white')
 billmenuFrame.pack()
 
-cosmeticspriceLabel=Label(billmenuFrame,text="Cosmetics Price",font=("Outfit",15,"bold"))
+cosmeticspriceLabel=Label(billmenuFrame,text="Cosmetics Price",font=("Outfit",15,"bold"),bg='#042741',fg='white')
 cosmeticspriceLabel.grid(row=0,column=0,pady=8,padx=10,sticky="w")
 
-cosmeticspriceEntry=Entry(billmenuFrame,font=("Outfit",15,"bold"),width=10)
+cosmeticspriceEntry=Entry(billmenuFrame,font=("Outfit",15,"bold"),width=10,bg='white',fg='black')
 cosmeticspriceEntry.grid(row=0,column=1,pady=8,padx=10)
 
-grocerypriceLabel=Label(billmenuFrame,text="Grocery Price",font=("Outfit",15,"bold"))
+grocerypriceLabel=Label(billmenuFrame,text="Grocery Price",font=("Outfit",15,"bold"),bg='#042741',fg='white')
 grocerypriceLabel.grid(row=1,column=0,pady=8,padx=10,sticky="w")
 
-grocerypriceEntry=Entry(billmenuFrame,font=("Outfit",15,"bold"),width=10)
+grocerypriceEntry=Entry(billmenuFrame,font=("Outfit",15,"bold"),width=10,bg='white',fg='black')
 grocerypriceEntry.grid(row=1,column=1,pady=8,padx=10)
 
-drinkspriceLabel=Label(billmenuFrame,text="Drinks Price",font=("Outfit",15,"bold"))
+drinkspriceLabel=Label(billmenuFrame,text="Drinks Price",font=("Outfit",15,"bold"),bg='#042741',fg='white')
 drinkspriceLabel.grid(row=2,column=0,pady=8,padx=10,sticky="w")
 
-drinkspriceEntry=Entry(billmenuFrame,font=("Outfit",15,"bold"),width=10)
+drinkspriceEntry=Entry(billmenuFrame,font=("Outfit",15,"bold"),width=10,bg='white',fg='black')
 drinkspriceEntry.grid(row=2,column=1,pady=8,padx=10)
 
-cosmeticstaxLabel=Label(billmenuFrame,text="Cosmetics Tax",font=("Outfit",15,"bold"))
+cosmeticstaxLabel=Label(billmenuFrame,text="Cosmetics Tax",font=("Outfit",15,"bold"),bg='#042741',fg='white')
 cosmeticstaxLabel.grid(row=0,column=2,pady=8,padx=10,sticky="w")
 
-cosmeticstaxEntry=Entry(billmenuFrame,font=("Outfit",15,"bold"),width=10)
+cosmeticstaxEntry=Entry(billmenuFrame,font=("Outfit",15,"bold"),width=10,bg='white',fg='black')
 cosmeticstaxEntry.grid(row=0,column=3,pady=8,padx=10)
 
-grocerytaxLabel=Label(billmenuFrame,text="Grocery Tax",font=("Outfit",15,"bold"))
+grocerytaxLabel=Label(billmenuFrame,text="Grocery Tax",font=("Outfit",15,"bold"),bg='#042741',fg='white')
 grocerytaxLabel.grid(row=1,column=2,pady=8,padx=10,sticky="w")
 
-grocerytaxEntry=Entry(billmenuFrame,font=("Outfit",15,"bold"),width=10)
+grocerytaxEntry=Entry(billmenuFrame,font=("Outfit",15,"bold"),width=10,bg='white',fg='black')
 grocerytaxEntry.grid(row=1,column=3,pady=8,padx=10)
 
-drinkstaxLabel=Label(billmenuFrame,text="Drinks Tax",font=("Outfit",15,"bold"))
+drinkstaxLabel=Label(billmenuFrame,text="Drinks Tax",font=("Outfit",15,"bold"),bg='#042741',fg='white')
 drinkstaxLabel.grid(row=2,column=2,pady=8,padx=10,sticky="w")
 
-drinkstaxEntry=Entry(billmenuFrame,font=("Outfit",15,"bold"),width=10)
+drinkstaxEntry=Entry(billmenuFrame,font=("Outfit",15,"bold"),width=10,bg='white',fg='black')
 drinkstaxEntry.grid(row=2,column=3,pady=8,padx=10)
 
-buttonFrame=Frame(billmenuFrame)
+buttonFrame=Frame(billmenuFrame,bg='#042741') #we used Frame instead of LabelFrame as LabelFrame adds border and we didn't want that
 buttonFrame.grid(row=0,column=4,rowspan=3) #to make button at center or at 3 row spaces so add rowspan=3
 
-totalButton=Button(buttonFrame,text="Total",font=("Outfit",15,"bold"),width=8,pady=10,command=total)
+totalButton=Button(buttonFrame,text="Total",font=("Outfit",15,"bold"),width=8,pady=10,activebackground='#042741',bg='#042741',command=total,fg='white')
 totalButton.grid(row=0,column=0,pady=20,padx=5)
 
-billButton=Button(buttonFrame,text="Bill",font=("Outfit",15,"bold"),width=8,pady=10,command=bill_area)
+billButton=Button(buttonFrame,text="Bill",font=("Outfit",15,"bold"),width=8,pady=10,activebackground='#042741',bg='#042741',command=bill_area,fg='white')
 billButton.grid(row=0,column=1,pady=20,padx=5)
 
-clearButton=Button(buttonFrame,text="Clear",font=("Outfit",15,"bold"),width=8,pady=10,command=clear)
-clearButton.grid(row=0,column=4,pady=20,padx=5)
+clearButton=Button(buttonFrame,text="Clear",font=("Outfit",15,"bold"),width=8,pady=10,activebackground='#042741',bg='#042741',command=clear,fg='white')
+clearButton.grid(row=0,column=2,pady=20,padx=5)
 
 root.mainloop() #this holds the ui window at screen
